@@ -33,7 +33,7 @@ and `test_parameters_are_written_only_in_the_constructor`.
 | claim stake in `PROVISIONAL_HOLD` | owner files evidence and passes the second audit | anyone resolves after the deadline | nobody calls either; both are permissionless |
 | claim stake in `CONTESTED` | owner files a rebuttal and passes the audit | anyone resolves after the deadline | nobody calls either |
 | escrow in `PROVISIONAL_HOLD` or `EVIDENCE_SUBMITTED` | released on a positive second audit | burned at the deadline | nobody calls either |
-| free stake | owner calls `withdraw_stake` at any time | not applicable | the owner never calls it |
+| free stake | owner calls `withdraw_stake` at any time | not applicable | the owner never calls it, or the recipient rejects the asynchronous native transfer (finding 9) |
 
 No status requires the cooperation of a single party without a deadline and a
 permissionless recovery path. `test_resolve_*` and `test_deadline_race_is_exclusive`
@@ -71,7 +71,10 @@ gate test through `assert_invariant`.
 
 Checked separately: zero amounts, overpayment (`test_withdraw_more_than_free_rejected`),
 underpayment (`test_stake_below_coverage_rejected`), rounding (the score is on a
-five value ladder, so the issued amount is one of four exact ratios),
+five value ladder, so the issued amount is one of four exact ratios), rebasing
+down (`test_second_audit_lower_score_rebases_the_escrow`), rebasing up
+(`test_second_audit_higher_score_releases_the_full_amount`), a provisional winner
+that files fraudulent evidence (`test_positive_hold_then_fraud_evidence_burns_escrow_and_contests`),
 double slash (`test_pool_never_receives_more_than_the_stake`), burn on lapse
 (`test_resolve_lapsed_hold_burns_credits_and_returns_stake`).
 
@@ -105,20 +108,27 @@ clamped. `test_window_bounds`, `test_max_claim_bounds`, `test_min_stake_bounds`,
   match on tier and on metric score. A difference of one point fails.
 * Each validator reruns the same fetch and the same prompt. Nothing the owner
   submits is trusted, including the on chain evidence hash.
-* Fail closed: an empty or unreachable page, a non object answer, an unknown
-  tier, a score off the ladder, or a missing score all revert the transaction.
-  There is no default score and no default tier.
+* Fail closed: an empty or unreachable primary or rebuttal page, a non object
+  answer, an unknown tier, a score off the ladder, or a missing score all revert
+  the transaction. There is no default score and no default tier.
   `test_malformed_verdicts_fail_closed` covers twelve shapes, and
-  `test_tier_only_answer_fails_closed` pins the tier-only case.
+  `test_tier_only_answer_fails_closed` pins the tier-only case. Page failures are
+  covered by `test_empty_evidence_page_fails_closed`,
+  `test_unreachable_evidence_fails_closed`, `test_empty_rebuttal_page_fails_closed`
+  and `test_unreachable_rebuttal_page_fails_closed`.
 * A self reported tier can never override the score: the tier stored on chain is
   recomputed from the score. `test_score_wins_over_a_self_reported_tier`.
 * Prompt injection: the fetched page and the operator supplied project name are
   both placed inside marked untrusted blocks, and the prompt states that neither
-  block is an instruction. `test_prompt_injection_in_page_cannot_set_the_verdict`
-  and `test_operator_text_is_framed_as_untrusted_data` cover the wording. This
-  is mitigation, not a proof of immunity.
+  block is an instruction. The fetched page is not scrubbed of block marker
+  text, so the marker itself is part of the residual risk. Mitigation is framed
+  data plus a fixed five value output; it is not a proof of immunity.
+  `test_prompt_injection_in_page_cannot_set_the_verdict`
+  and `test_operator_text_is_framed_as_untrusted_data` cover the wording.
 * Direct mode starts from local mocks only. Validator agreement is proven by the
-  live studionet run in `docs/evidence.md`.
+  live studionet run in `docs/evidence.md`. The direct suite has 128 tests; the
+  live suite is one scenario that drives two claims to settlement, runs two
+  attack transactions, and reads the accounting invariant back from chain.
 
 ## Findings
 
@@ -132,5 +142,8 @@ clamped. `test_window_bounds`, `test_max_claim_bounds`, `test_min_stake_bounds`,
 | 6 | Prompt injection resistance is argued, not proven | OPEN, stated as a limitation in the README |
 | 7 | `transfer_credits` to the caller's own address is a no-op that still writes | OPEN, harmless, no value created or destroyed |
 | 8 | A tier-only LLM answer (no `metric_score`) was mapped to the middle of its band, which minted 50 percent of the claim on a malformed answer | FIXED, `_parse_verdict` now rejects a missing score and there is no default. `test_tier_only_answer_fails_closed`, `test_malformed_verdicts_fail_closed` |
+| 9 | Free stake is paid with an asynchronous native transfer. A recipient contract that rejects native value can strand the value after the counter is decremented | OPEN, operational assumption. EOAs are unaffected and the live run uses EOAs. There is no admin sweep by design |
+| 10 | Deadlines compare the validators' UTC wall clock, and the SDK does not expose a consensus timestamp, so validators a second apart at the exact boundary could disagree | OPEN, inherent to the SDK. The one hour floor makes the exposure a one second window. The direct tests pin both sides of the boundary with time travel |
+| 11 | Native value sent directly to the contract outside a method is not tracked and has no recovery path | OPEN, by design. The contract has no admin sweep; only method attached value is accounted for |
 
-The contract is not described as bug free. Items 3 to 7 are open with reasons.
+The contract is not described as bug free. Items 3 to 7 and 9 to 11 are open with reasons.

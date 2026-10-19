@@ -61,7 +61,11 @@ def main() -> None:
     keeper = accounts[1]
 
     factory = get_contract_factory("CarbonCreditVerisign")
-    contract = factory.build_contract(contract_address=address, account=keeper)
+    contract = _retry(
+        lambda: factory.build_contract(contract_address=address, account=keeper),
+        attempts=8,
+        pause=15,
+    )
     claim = _retry(lambda: contract.get_claim(args=[CLAIM]).call())
     if claim["status"] not in (
         "PENDING_AUDIT",

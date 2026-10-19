@@ -271,6 +271,22 @@ def test_audit_is_permissionless(direct_vm, contract, claim_setup, direct_bob):
     assert contract.get_claim(claim_id)["status"] == "PROVISIONAL_HOLD"
 
 
+def test_numeric_string_score_is_accepted(direct_vm, contract, claim_setup):
+    """A model that quotes the score is still parsed onto the exact ladder."""
+    contract, claim_id = _open(contract, claim_setup, direct_vm)
+    direct_vm.mock_llm(
+        r"(?s).*claim_id: .*",
+        '{"metric_score": "75", "summary": "x"}',
+    )
+
+    contract.verify_offset_claim_live(claim_id)
+
+    claim = contract.get_claim(claim_id)
+    assert claim["metric_score"] == 75
+    assert claim["tier"] == "PARTIAL_OFFSET"
+    assert claim["escrow_atto"] == 75 * ONE_CREDIT
+
+
 def test_string_red_flags_are_normalised(direct_vm, contract, claim_setup):
     contract, claim_id = _open(contract, claim_setup, direct_vm)
     direct_vm.mock_llm(

@@ -72,8 +72,9 @@ equivalent.
 
 ## Fail closed rules
 
-- A malformed, missing or inconsistent answer raises `[LLM_ERROR]` and reverts
-  the transaction. Nothing is stored and nothing is issued.
+- A malformed or missing answer raises `[LLM_ERROR]` and reverts the
+  transaction. Nothing is stored and nothing is issued. The tier is always
+  recomputed from the score, so a self reported tier cannot override it.
 - An empty or unreachable page raises `[EXTERNAL]` or `[TRANSIENT]` and reverts.
 - Credits are never minted straight to a balance. The first positive audit mints
   into escrow and opens an evidence window.
@@ -124,15 +125,49 @@ gltest tests/integration -v -s --network studionet
 agreement. Validator agreement, real web rendering and the real model are
 covered only by `tests/integration` on studionet.
 
+## No admin backdoors
+
+There is no owner field, no setter, no pause, no upgrade hook, no rescue and no
+sweep. The only authority comparison in the contract is
+`gl.message.sender_address != claim.owner`, and it is evaluated per claim. The
+direct suite scans the source and the write ABI for banned names, counts the
+sender comparisons, and checks that constructor parameters are written only in
+`__init__` (`test_no_admin_surface_in_the_write_abi`,
+`test_only_one_sender_authority_check_exists`,
+`test_parameters_are_written_only_in_the_constructor`).
+
 ## Deployment
 
 | Field | Value |
 |---|---|
 | Network | StudioNet, chain id 61999 |
-| Contract address | see [docs/evidence.md](docs/evidence.md) |
-| Deploy transaction | see [docs/evidence.md](docs/evidence.md) |
-| Contract sha256 | see [docs/evidence.md](docs/evidence.md) |
-| Commit | see [docs/evidence.md](docs/evidence.md) |
+| Target submission account | tidex22 (richeroveis) |
+| Deployment and claim owner account | `0x154a452b0755EE812014C1405B15D905BA06f9c7` (CLI alias `deployer`, project `.env`) |
+| Contract address | `0xD227f75F797e34789f5DCdbaa6407Be35841dFAF` |
+| Deploy transaction | `0x4ebb91fbc113ae07e528e2d040ec19ba529ce5df688a59a0eb669a2f44013e83` |
+| Contract sha256 | `715e068aa67fac249827f8606d66365e81f055ab1894e5ef68f9da8229367792` |
+| Deployed source commit | `db5e5b03c9d521aabb017ed1d6713d3d6a982781` |
+| Git tag | `studionet-v1` |
+| Transaction evidence | [docs/evidence.md](docs/evidence.md) |
+
+The four way sha256 comparison in [docs/evidence.md](docs/evidence.md) covers
+the working tree file, the file at the deployed commit, the code read through
+`gen_getContractCode`, and the code read through the `genlayer code` CLI. All
+four digests are identical.
+
+## Live run summary
+
+| Claim | Audits | Verdict | Result |
+|---|---|---|---|
+| `chyulu-hills-1` | 2 | `PARTIAL_OFFSET`, score 75 | 7.5 credits issued to the owner, 10 GEN stake returned |
+| `example-dot-com-1` | 2 | `REJECTED_FRAUD`, score 0 | revoked, 10 GEN stake transferred to the community pool |
+| `deadline-probe-1` | 0 | none | resolution before the deadline reverted, after the deadline it became `EXPIRED_UNVERIFIED` and 5 GEN stake returned |
+
+The final invariant after the late resolution is `ok: true`: credit supply is
+7.5 credits and equals balances with zero escrow, and locked stake is zero and
+equals the sum of open claim stakes. One validator round on claim A returned
+`UNDETERMINED` and was retried to consensus; the evidence table records both
+transactions so the retry is visible.
 
 ## Honest limitations
 
@@ -144,4 +179,13 @@ covered only by `tests/integration` on studionet.
   verdict by itself. That is not a proof of injection immunity.
 - The one hour deadline floor is a production floor. The live run exercises the
   early side of the boundary (an early resolution must revert); the late side is
-  exercised in direct mode with time travel.
+  exercised live after the deadline and in direct mode with time travel.
+- Native value sent straight to the contract outside a method is not tracked and
+  cannot be swept, because there is no admin path. Only value attached to a
+  method is accounted for.
+- Payouts and slashes are asynchronous native transfers. An externally owned
+  account receives them normally. A recipient contract that rejects native value
+  can strand its own payout; the live run uses externally owned accounts.
+- Deadline checks use the validators' UTC wall clock. The SDK does not expose a
+  consensus timestamp, so validators a second apart at the exact boundary could
+  disagree. The one hour floor keeps that window to a single second.

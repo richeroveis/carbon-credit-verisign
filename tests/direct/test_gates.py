@@ -248,6 +248,86 @@ def test_resolve_lapsed_contest_slashes(direct_vm, contract, claim_setup, record
     assert_invariant(contract)
 
 
+def test_second_audit_higher_score_releases_the_full_amount(
+    direct_vm, contract, claim_setup, direct_alice
+):
+    contract, claim_id = _open(contract, claim_setup, direct_vm)
+    _positive(direct_vm, contract, claim_id, score=25, tier="PARTIAL_OFFSET")
+    assert contract.get_claim(claim_id)["escrow_atto"] == 25 * ONE_CREDIT
+
+    contract.submit_evidence(claim_id, REBUTTAL_URL, "b" * 64)
+    _remock(direct_vm, "Full verification report for 120000 tonnes.")
+    _positive(direct_vm, contract, claim_id)
+
+    claim = contract.get_claim(claim_id)
+    assert claim["status"] == "CREDITS_ISSUED"
+    assert claim["issued_atto"] == 100 * ONE_CREDIT
+    assert contract.credit_balance(direct_alice) == 100 * ONE_CREDIT
+    snapshot = contract.vault_snapshot()
+    assert snapshot["credit_supply_atto"] == 100 * ONE_CREDIT
+    assert snapshot["burned_credits_atto"] == 0
+    assert_invariant(contract)
+
+
+def test_positive_hold_then_fraud_evidence_burns_escrow_and_contests(
+    direct_vm, contract, claim_setup, direct_alice
+):
+    """A provisional winner that files fraudulent evidence loses the escrow."""
+    contract, claim_id = _open(contract, claim_setup, direct_vm)
+    _positive(direct_vm, contract, claim_id)
+    contract.submit_evidence(claim_id, REBUTTAL_URL, "b" * 64)
+    _remock(direct_vm, "A page that proves nothing about this project at all.")
+    _positive(direct_vm, contract, claim_id, score=0, tier="REJECTED_FRAUD")
+
+    claim = contract.get_claim(claim_id)
+    assert claim["status"] == "CONTESTED"
+    assert claim["fraud_strikes"] == 1
+    assert claim["escrow_atto"] == 0
+    snapshot = contract.vault_snapshot()
+    assert snapshot["burned_credits_atto"] == 100 * ONE_CREDIT
+    assert snapshot["credit_supply_atto"] == 0
+    assert snapshot["stake_locked_atto"] == 100 * ONE_CREDIT
+    assert contract.free_stake(direct_alice) == 0
+    assert_invariant(contract)
+
+
+def test_empty_rebuttal_page_fails_closed(direct_vm, contract, claim_setup):
+    contract, claim_id = _open(contract, claim_setup, direct_vm)
+    _positive(direct_vm, contract, claim_id)
+    contract.submit_evidence(claim_id, REBUTTAL_URL, "b" * 64)
+    _remock(direct_vm, "short")
+    mock_audit(direct_vm, claim_id, "VERIFIED_FULL", 100)
+
+    with direct_vm.expect_revert("[EXTERNAL]"):
+        contract.verify_offset_claim_live(claim_id)
+
+    claim = contract.get_claim(claim_id)
+    assert claim["status"] == "EVIDENCE_SUBMITTED"
+    assert claim["escrow_atto"] == 100 * ONE_CREDIT
+    assert_invariant(contract)
+
+
+def test_unreachable_rebuttal_page_fails_closed(direct_vm, contract, claim_setup):
+    contract, claim_id = _open(contract, claim_setup, direct_vm)
+    _positive(direct_vm, contract, claim_id)
+    contract.submit_evidence(claim_id, REBUTTAL_URL, "b" * 64)
+    direct_vm.clear_mocks()
+    mock_site(direct_vm, "registry.example.org", EVIDENCE)
+    direct_vm.mock_web(
+        r".*rebuttal\.example\.org.*",
+        {"response": {"status": 503, "headers": {}, "body": b""}},
+    )
+    mock_audit(direct_vm, claim_id, "VERIFIED_FULL", 100)
+
+    with direct_vm.expect_revert():
+        contract.verify_offset_claim_live(claim_id)
+
+    claim = contract.get_claim(claim_id)
+    assert claim["status"] == "EVIDENCE_SUBMITTED"
+    assert claim["escrow_atto"] == 100 * ONE_CREDIT
+    assert_invariant(contract)
+
+
 def test_resolve_after_rebuttal_without_reaudit_slashes(
     direct_vm, contract, claim_setup, recorder, pool
 ):
