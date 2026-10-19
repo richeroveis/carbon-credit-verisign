@@ -1,0 +1,44 @@
+INFO: File `gltest.config.yaml` found in the current directory, using it
+INFO: Clearing artifacts directory: artifacts
+INFO: Using the following configuration:
+INFO:   RPC URL: https://studio.genlayer.com/api
+INFO:   Selected Network: studionet
+INFO:   Available networks: ['localnet', 'studionet']
+INFO:   Selected chain type: studionet
+INFO:   Available chains: localnet, studionet, testnet_asimov, testnet_bradbury
+INFO:   Contracts directory: contracts
+INFO:   Artifacts directory: artifacts
+INFO:   Environment: .env
+INFO:   Default wait interval: 5000 ms
+INFO:   Default wait retries: 120
+INFO:   Leader only mode: False
+============================= test session starts =============================
+platform win32 -- Python 3.13.13, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\oveis\AppData\Local\Programs\Python\Python313\python.exe
+rootdir: C:\Users\oveis\Project\CarbonCreditVerisign
+configfile: pytest.ini
+plugins: anyio-4.15.1, genlayer-test-0.29.2, platformdirs-4.12.4
+collecting ... collected 1 item
+
+tests/integration/test_live_scenario.py::test_live_scenario RETRY 1/4: Failed to deploy contract CarbonCreditVerisign: Request to https://studio.genlayer.com/api failed: HTTPSConnectionPool(host='studio.genlayer.com', port=443): Max retries exceeded with url: /api (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))
+TX {"step": "deploy", "tx_hash": "0x209717df6325d63e3385826fa4752de7369e62e84ba3cd31823dd54c9560c253", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "", "note": "0x4245EEE9752674c437D56c8BC58e136b799a85FA", "observed_at": 1792445476}
+CONTRACT 0x4245EEE9752674c437D56c8BC58e136b799a85FA
+TX {"step": "register_chyulu-hills-1", "tx_hash": "0x1430bb52cc78138f8ab2c82c05a61c69ae49a0120854e689b7715010c41668a9", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "PENDING_AUDIT", "note": "", "observed_at": 1792445497}
+RETRY 1/4: Request to https://studio.genlayer.com/api failed: HTTPSConnectionPool(host='studio.genlayer.com', port=443): Max retries exceeded with url: /api (Caused by SSLError(SSLEOFError(8, '[SSL: UNEXPECTED_EOF_WHILE_READING] EOF occurred in violation of protocol (_ssl.c:1032)')))
+TX {"step": "audit_A_pending_audit", "tx_hash": "0xa09d04c294c289b39ef43e721179ada4199f7649dbbbe0ca57d1aad7830c5aed", "status": "ACCEPTED", "execution": "ERROR", "state_after": "PROVISIONAL_HOLD", "note": "tier=PARTIAL_OFFSET score=75", "observed_at": 1792445607}
+TX {"step": "attack_foreign_evidence_A", "tx_hash": "0xb0931ba0dd00d716dd3b01b9a403ea35ea46210f05213291bad54340c4e842b0", "status": "ACCEPTED", "execution": "ERROR", "state_after": "PROVISIONAL_HOLD", "note": "state unchanged", "observed_at": 1792445624}
+TX {"step": "submit_evidence_A", "tx_hash": "0x5fd803e54b7910f9bf8db119ffec39b24d76027f7db1caf9488422f28f105f99", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "EVIDENCE_SUBMITTED", "note": "", "observed_at": 1792445638}
+TX {"step": "audit_A_evidence_submitted", "tx_hash": "0x45d0d564d77824cd71eef0ce31bb48af77521908062bab1e36ae31e0aa8b9f2d", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "CREDITS_ISSUED", "note": "tier=PARTIAL_OFFSET score=75", "observed_at": 1792445686}
+CLAIM_A {"audit_count": 2, "claim_id": "chyulu-hills-1", "closed_at": 1792445645, "created_at": 1792445487, "deadline": 1792449227, "escrow_atto": 0, "evidence_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "evidence_url": "https://verra.org/verra-issues-1-billionth-carbon-credit/", "fraud_strikes": 0, "issued_atto": 7500000000000000000, "metric_score": 75, "owner": "0x154a452b0755EE812014C1405B15D905BA06f9c7", "project_name": "Chyulu Hills REDD+ Project", "red_flags": "No issuance serial or project ID; Marketing/news text rather than registry record; No direct verifiable issuance reference for the claimed credits", "registry_url": "https://verra.org/verra-issues-1-billionth-carbon-credit/", "requested_atto": 10000000000000000000, "stake_atto": 0, "status": "CREDITS_ISSUED", "summary": "Evidence identifies the Chyulu Hills REDD+ Project and Verra/VCS, and states the one billionth carbon credit was issued from this project, exceeding the claimed 10 tCO2e. However, it is a news article and provides no specific issuance ID or registry entry.", "tier": "PARTIAL_OFFSET", "updated_at": 1792445645}
+TX {"step": "register_example-dot-com-1", "tx_hash": "0xd2ea3e0ab2db408eebad4439d25d686061c77407178087f828a55fd993b8937e", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "PENDING_AUDIT", "note": "", "observed_at": 1792445704}
+TX {"step": "audit_B_pending_audit", "tx_hash": "0xc039a63e9a717d1b2b252023314f31a196aa2cea734fe124fb2088fb294b2637", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "CONTESTED", "note": "tier=REJECTED_FRAUD score=0", "observed_at": 1792445752}
+TX {"step": "submit_evidence_B", "tx_hash": "0x6915c5f55f045c059abe42998adce02542724e523928b189bd9f9f5218185ccd", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "EVIDENCE_SUBMITTED", "note": "", "observed_at": 1792445766}
+TX {"step": "audit_B_evidence_submitted", "tx_hash": "0xe136027b13bbced9af55d7b8ac98c56db891e748a24dba0c4c2c7fac2577fd21", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "REVOKED_FRAUD", "note": "tier=REJECTED_FRAUD score=0", "observed_at": 1792445812}
+CLAIM_B {"audit_count": 2, "claim_id": "example-dot-com-1", "closed_at": 1792445772, "created_at": 1792445695, "deadline": 1792449357, "escrow_atto": 0, "evidence_hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee", "evidence_url": "https://example.com/", "fraud_strikes": 2, "issued_atto": 0, "metric_score": 0, "owner": "0x154a452b0755EE812014C1405B15D905BA06f9c7", "project_name": "Unverifiable Offset Project", "red_flags": "placeholder domain; no offset data", "registry_url": "https://example.com/", "requested_atto": 10000000000000000000, "stake_atto": 0, "status": "REVOKED_FRAUD", "summary": "Evidence only contains generic placeholder text about the example.com domain and provides no project details, offset volume, standard, or verification reference.", "tier": "REJECTED_FRAUD", "updated_at": 1792445772}
+TX {"step": "register_deadline-probe-1", "tx_hash": "0xf55f8ac28e4e2b6db48d1212e099943ca18769b3570e2a9d25a872d3c595b656", "status": "ACCEPTED", "execution": "SUCCESS", "state_after": "PENDING_AUDIT", "note": "", "observed_at": 1792445829}
+TX {"step": "attack_early_resolve_C", "tx_hash": "0xd47fd096a5f639a503746fa3dc68342c7acdf58981ae1216ed7e7e92d18ab3b4", "status": "ACCEPTED", "execution": "ERROR", "state_after": "PENDING_AUDIT", "note": "state unchanged", "observed_at": 1792445843}
+SNAPSHOT {"burned_credits_atto": 0, "claim_count": 3, "credit_balances_atto": 7500000000000000000, "credit_supply_atto": 7500000000000000000, "escrow_atto": 0, "issued_total_atto": 7500000000000000000, "open_claims": 1, "open_stake_atto": 5000000000000000000, "pool_paid_atto": 10000000000000000000, "slashed_atto": 10000000000000000000, "stake_free_atto": 10000000000000000000, "stake_locked_atto": 5000000000000000000}
+INVARIANT {"credit_balances_atto": 7500000000000000000, "credit_supply_atto": 7500000000000000000, "escrow_atto": 0, "ok": true, "open_claims": 1, "open_stake_atto": 5000000000000000000, "stake_free_atto": 10000000000000000000, "stake_holds": true, "stake_locked_atto": 5000000000000000000, "supply_holds": true}
+RECORD evidence\live_run.json
+PASSED
+
+======================== 1 passed in 399.51s (0:06:39) ========================

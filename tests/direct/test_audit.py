@@ -94,6 +94,8 @@ def test_fraud_finding_contests_and_opens_rebuttal(direct_vm, contract, claim_se
         '{"metric_score": 101, "summary": "x"}',
         '{"metric_score": "lots", "summary": "x"}',
         '{"metric_score": true, "summary": "x"}',
+        '{"tier": "PARTIAL_OFFSET", "summary": "x"}',
+        '{"summary": "x"}',
         '{"tier": "APPROVED_MAYBE"}',
         "{}",
         "[]",
@@ -113,16 +115,18 @@ def test_malformed_verdicts_fail_closed(direct_vm, contract, claim_setup, payloa
     assert_invariant(contract)
 
 
-def test_tier_only_answer_maps_to_the_middle_of_the_band(direct_vm, contract, claim_setup):
+def test_tier_only_answer_fails_closed(direct_vm, contract, claim_setup):
+    """A missing score is malformed. It must never default to a partial mint."""
     contract, claim_id = _open(contract, claim_setup, direct_vm)
     direct_vm.mock_llm(r"(?s).*claim_id: .*", '{"tier": "PARTIAL_OFFSET", "summary": "x"}')
 
-    contract.verify_offset_claim_live(claim_id)
+    with direct_vm.expect_revert("no metric_score"):
+        contract.verify_offset_claim_live(claim_id)
 
     claim = contract.get_claim(claim_id)
-    assert claim["metric_score"] == 50
-    assert claim["tier"] == "PARTIAL_OFFSET"
-    assert claim["escrow_atto"] == 50 * ONE_CREDIT
+    assert claim["status"] == "PENDING_AUDIT"
+    assert claim["escrow_atto"] == 0
+    assert contract.vault_snapshot()["credit_supply_atto"] == 0
 
 
 def test_score_wins_over_a_self_reported_tier(direct_vm, contract, claim_setup, direct_alice):

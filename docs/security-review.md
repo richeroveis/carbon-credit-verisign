@@ -106,10 +106,10 @@ clamped. `test_window_bounds`, `test_max_claim_bounds`, `test_min_stake_bounds`,
 * Each validator reruns the same fetch and the same prompt. Nothing the owner
   submits is trusted, including the on chain evidence hash.
 * Fail closed: an empty or unreachable page, a non object answer, an unknown
-  tier, a score off the ladder, or a missing score and tier all revert the
-  transaction. `test_malformed_verdicts_fail_closed` covers ten shapes, and
-  `test_tier_only_answer_maps_to_the_middle_of_the_band` pins the only fallback
-  (a tier without a score maps to the middle of its band).
+  tier, a score off the ladder, or a missing score all revert the transaction.
+  There is no default score and no default tier.
+  `test_malformed_verdicts_fail_closed` covers twelve shapes, and
+  `test_tier_only_answer_fails_closed` pins the tier-only case.
 * A self reported tier can never override the score: the tier stored on chain is
   recomputed from the score. `test_score_wins_over_a_self_reported_tier`.
 * Prompt injection: the fetched page and the operator supplied project name are

@@ -183,18 +183,6 @@ def _tier_for_score(score: int) -> str:
     return TIER_PARTIAL
 
 
-def _score_from_tier_hint(raw) -> int:
-    """Accept a tier only answer, mapping it to the middle of its band."""
-    tier = str(raw).strip().upper()
-    if tier == TIER_FULL:
-        return 100
-    if tier == TIER_PARTIAL:
-        return 50
-    if tier == TIER_FRAUD:
-        return 0
-    raise gl.vm.UserError(ERROR_LLM + " answer has neither a score nor a known tier")
-
-
 def _normalise_flags(raw) -> str:
     if isinstance(raw, list):
         parts = []
@@ -209,17 +197,17 @@ def _normalise_flags(raw) -> str:
 def _parse_verdict(raw) -> dict:
     """Strict fail closed parse of the auditor answer.
 
-    The score must be one of the five anchors and the tier is derived from it,
-    so a self reported tier can never contradict the agreed score. A missing
-    score is accepted only when a known tier is present, which maps to the
-    middle of that tier's band. Any other shape reverts the transaction.
+    The answer must carry a metric_score on the five value ladder, and the tier
+    is derived from it, so a self reported tier can never contradict the agreed
+    score. A missing score is rejected, never defaulted, because defaulting
+    would issue credits on a malformed answer. Any other shape reverts the
+    transaction.
     """
     if not isinstance(raw, dict):
         raise gl.vm.UserError(ERROR_LLM + " auditor answer is not an object")
-    if raw.get("metric_score") is None:
-        score = _score_from_tier_hint(raw.get("tier", ""))
-    else:
-        score = _parse_score(raw.get("metric_score"))
+    if "metric_score" not in raw or raw.get("metric_score") is None:
+        raise gl.vm.UserError(ERROR_LLM + " auditor answer has no metric_score")
+    score = _parse_score(raw.get("metric_score"))
     summary = _clip(str(raw.get("summary", "")).strip(), MAX_SUMMARY_CHARS)
     return {
         "tier": _tier_for_score(score),
