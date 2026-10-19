@@ -1,0 +1,27 @@
+# gltest configuration for CarbonCreditVerisign.
+#
+# Direct tests do not read this file, they run in process with mocks.
+# Integration tests use the studionet entry below. The two keys come from the
+# project .env file which is gitignored. Account 0 is the project owner and
+# deployer, account 1 is the unrelated third party used in the live scenario.
+
+environment: .env
+
+paths:
+  contracts: contracts
+  artifacts: artifacts
+
+networks:
+  default: studionet
+
+  localnet:
+    accounts:
+      - "${GENLAYER_PRIVATE_KEY}"
+
+  studionet:
+    accounts:
+      - "${GENLAYER_PRIVATE_KEY}"
+      - "${GENLAYER_SECOND_PRIVATE_KEY}"
+    leader_only: false
+    default_wait_interval: 5000
+    default_wait_retries: 120

@@ -1,0 +1,22 @@
+# Credentials, never commit.
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Test and build artifacts
+artifacts/
+.gltest_cache/
+node_modules/
+
+# Editors and OS noise
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

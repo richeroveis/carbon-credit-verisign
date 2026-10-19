@@ -1,0 +1,5 @@
+# Test and deploy tooling for CarbonCreditVerisign.
+# Direct tests run in process with the pinned py-genlayer runner.
+genvm-linter==0.11.0
+genlayer-test==0.29.2
+pytest==9.1.1
