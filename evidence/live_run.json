@@ -1,6 +1,6 @@
 {
-  "contract_address": "0x4245EEE9752674c437D56c8BC58e136b799a85FA",
-  "deploy_tx": "0x209717df6325d63e3385826fa4752de7369e62e84ba3cd31823dd54c9560c253",
+  "contract_address": "0xD227f75F797e34789f5DCdbaa6407Be35841dFAF",
+  "deploy_tx": "0x4ebb91fbc113ae07e528e2d040ec19ba529ce5df688a59a0eb669a2f44013e83",
   "owner": "0x154a452b0755EE812014C1405B15D905BA06f9c7",
   "third_party": "0x665f3688c289C6dC3df3Fa7009d6Ea950847c9BF",
   "pool": "0x665f3688c289C6dC3df3Fa7009d6Ea950847c9BF",
@@ -9,9 +9,9 @@
     "A": {
       "audit_count": 2,
       "claim_id": "chyulu-hills-1",
-      "closed_at": 1792445645,
-      "created_at": 1792445487,
-      "deadline": 1792449227,
+      "closed_at": 1792446397,
+      "created_at": 1792446182,
+      "deadline": 1792449982,
       "escrow_atto": 0,
       "evidence_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
       "evidence_url": "https://verra.org/verra-issues-1-billionth-carbon-credit/",
@@ -20,21 +20,21 @@
       "metric_score": 75,
       "owner": "0x154a452b0755EE812014C1405B15D905BA06f9c7",
       "project_name": "Chyulu Hills REDD+ Project",
-      "red_flags": "No issuance serial or project ID; Marketing/news text rather than registry record; No direct verifiable issuance reference for the claimed credits",
+      "red_flags": "Marketing/news article rather than registry record; No project-specific issuance/serial number; No direct link to verifiable registry entry; Volume cited is symbolic milestone, not project total issuance detail",
       "registry_url": "https://verra.org/verra-issues-1-billionth-carbon-credit/",
       "requested_atto": 10000000000000000000,
       "stake_atto": 0,
       "status": "CREDITS_ISSUED",
-      "summary": "Evidence identifies the Chyulu Hills REDD+ Project and Verra/VCS, and states the one billionth carbon credit was issued from this project, exceeding the claimed 10 tCO2e. However, it is a news article and provides no specific issuance ID or registry entry.",
+      "summary": "Verra news identifies the Chyulu Hills REDD+ Project and states the one billionth VCS carbon credit was issued from it. This supports at least 10 tCO2e and names the registry/standard, but gives no project-specific issuance ID or serial reference.",
       "tier": "PARTIAL_OFFSET",
-      "updated_at": 1792445645
+      "updated_at": 1792446397
     },
     "B": {
       "audit_count": 2,
       "claim_id": "example-dot-com-1",
-      "closed_at": 1792445772,
-      "created_at": 1792445695,
-      "deadline": 1792449357,
+      "closed_at": 1792446492,
+      "created_at": 1792446434,
+      "deadline": 1792450079,
       "escrow_atto": 0,
       "evidence_hash": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
       "evidence_url": "https://example.com/",
@@ -43,21 +43,21 @@
       "metric_score": 0,
       "owner": "0x154a452b0755EE812014C1405B15D905BA06f9c7",
       "project_name": "Unverifiable Offset Project",
-      "red_flags": "placeholder domain; no offset data",
+      "red_flags": "unrelated evidence; no offset data; generic domain notice",
       "registry_url": "https://example.com/",
       "requested_atto": 10000000000000000000,
       "stake_atto": 0,
       "status": "REVOKED_FRAUD",
-      "summary": "Evidence only contains generic placeholder text about the example.com domain and provides no project details, offset volume, standard, or verification reference.",
+      "summary": "The evidence is generic documentation text unrelated to carbon offsets. No project details, standard, or verification data are provided.",
       "tier": "REJECTED_FRAUD",
-      "updated_at": 1792445772
+      "updated_at": 1792446492
     },
     "C": {
       "audit_count": 0,
       "claim_id": "deadline-probe-1",
       "closed_at": 0,
-      "created_at": 1792445818,
-      "deadline": 1792449418,
+      "created_at": 1792446531,
+      "deadline": 1792450131,
       "escrow_atto": 0,
       "evidence_hash": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "evidence_url": "",
@@ -73,7 +73,7 @@
       "status": "PENDING_AUDIT",
       "summary": "",
       "tier": "",
-      "updated_at": 1792445818
+      "updated_at": 1792446531
     }
   },
   "snapshot": {
@@ -105,111 +105,120 @@
   "transactions": [
     {
       "step": "deploy",
-      "tx_hash": "0x209717df6325d63e3385826fa4752de7369e62e84ba3cd31823dd54c9560c253",
+      "tx_hash": "0x4ebb91fbc113ae07e528e2d040ec19ba529ce5df688a59a0eb669a2f44013e83",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "",
-      "note": "0x4245EEE9752674c437D56c8BC58e136b799a85FA",
-      "observed_at": 1792445476
+      "note": "0xD227f75F797e34789f5DCdbaa6407Be35841dFAF",
+      "observed_at": 1792446170
     },
     {
       "step": "register_chyulu-hills-1",
-      "tx_hash": "0x1430bb52cc78138f8ab2c82c05a61c69ae49a0120854e689b7715010c41668a9",
+      "tx_hash": "0x1fb1a598ebec8617ab75b207f3a8fb727b79fa9aeebc7c7a0593b4c42ad54868",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "PENDING_AUDIT",
       "note": "",
-      "observed_at": 1792445497
+      "observed_at": 1792446191
     },
     {
       "step": "audit_A_pending_audit",
-      "tx_hash": "0xa09d04c294c289b39ef43e721179ada4199f7649dbbbe0ca57d1aad7830c5aed",
+      "tx_hash": "0x1e840ee6a2dbbf04f086a0a0fff878423ef4ac812f5616751e64e1730da2341f",
+      "status": "UNDETERMINED",
+      "execution": "SUCCESS",
+      "state_after": "PENDING_AUDIT",
+      "note": "tier= score=0",
+      "observed_at": 1792446319
+    },
+    {
+      "step": "audit_A_pending_audit",
+      "tx_hash": "0x05c5062ebecdf4ca5155ff9303e8611a91f69cdfb1476a788da056a67a467664",
       "status": "ACCEPTED",
-      "execution": "ERROR",
+      "execution": "SUCCESS",
       "state_after": "PROVISIONAL_HOLD",
       "note": "tier=PARTIAL_OFFSET score=75",
-      "observed_at": 1792445607
+      "observed_at": 1792446362
     },
     {
       "step": "attack_foreign_evidence_A",
-      "tx_hash": "0xb0931ba0dd00d716dd3b01b9a403ea35ea46210f05213291bad54340c4e842b0",
+      "tx_hash": "0x6147c40c293ac665dcd84ac58c91bcf5e674ac5806f59816aaf7d2b78d1d5e3d",
       "status": "ACCEPTED",
       "execution": "ERROR",
       "state_after": "PROVISIONAL_HOLD",
       "note": "state unchanged",
-      "observed_at": 1792445624
+      "observed_at": 1792446379
     },
     {
       "step": "submit_evidence_A",
-      "tx_hash": "0x5fd803e54b7910f9bf8db119ffec39b24d76027f7db1caf9488422f28f105f99",
+      "tx_hash": "0xa58422778fb1682955876fbfd4ab46f648c2f4fde8cf3b4121b1de435bbcd490",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "EVIDENCE_SUBMITTED",
       "note": "",
-      "observed_at": 1792445638
+      "observed_at": 1792446391
     },
     {
       "step": "audit_A_evidence_submitted",
-      "tx_hash": "0x45d0d564d77824cd71eef0ce31bb48af77521908062bab1e36ae31e0aa8b9f2d",
+      "tx_hash": "0x4b50d0fdede3048c18b9448f72ae0c586f2506616890cb713d4863f324becc0e",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "CREDITS_ISSUED",
       "note": "tier=PARTIAL_OFFSET score=75",
-      "observed_at": 1792445686
+      "observed_at": 1792446427
     },
     {
       "step": "register_example-dot-com-1",
-      "tx_hash": "0xd2ea3e0ab2db408eebad4439d25d686061c77407178087f828a55fd993b8937e",
+      "tx_hash": "0xaa3d88a5956447fee070628a6ad4c39a9ed0493630954309c3e781ab46d24f27",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "PENDING_AUDIT",
       "note": "",
-      "observed_at": 1792445704
+      "observed_at": 1792446444
     },
     {
       "step": "audit_B_pending_audit",
-      "tx_hash": "0xc039a63e9a717d1b2b252023314f31a196aa2cea734fe124fb2088fb294b2637",
+      "tx_hash": "0x2feb13c1231e79002ca55f766c9d3e0ffb2c2c4593c23061e09ab35866b299ae",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "CONTESTED",
       "note": "tier=REJECTED_FRAUD score=0",
-      "observed_at": 1792445752
+      "observed_at": 1792446474
     },
     {
       "step": "submit_evidence_B",
-      "tx_hash": "0x6915c5f55f045c059abe42998adce02542724e523928b189bd9f9f5218185ccd",
+      "tx_hash": "0x79eb79547112f2a2367353c7d8e1a542d3f497160c89503619436983f739fe92",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "EVIDENCE_SUBMITTED",
       "note": "",
-      "observed_at": 1792445766
+      "observed_at": 1792446488
     },
     {
       "step": "audit_B_evidence_submitted",
-      "tx_hash": "0xe136027b13bbced9af55d7b8ac98c56db891e748a24dba0c4c2c7fac2577fd21",
+      "tx_hash": "0x25e082785a48de978c6b4b20746ad225c9f389ba13feca75727b24b3b9665a8e",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "REVOKED_FRAUD",
       "note": "tier=REJECTED_FRAUD score=0",
-      "observed_at": 1792445812
+      "observed_at": 1792446525
     },
     {
       "step": "register_deadline-probe-1",
-      "tx_hash": "0xf55f8ac28e4e2b6db48d1212e099943ca18769b3570e2a9d25a872d3c595b656",
+      "tx_hash": "0x67f48da70184bb4f7922ca62b3e77381d0c025d3c1b4fe2c0b70cc7dcce22c5e",
       "status": "ACCEPTED",
       "execution": "SUCCESS",
       "state_after": "PENDING_AUDIT",
       "note": "",
-      "observed_at": 1792445829
+      "observed_at": 1792446542
     },
     {
       "step": "attack_early_resolve_C",
-      "tx_hash": "0xd47fd096a5f639a503746fa3dc68342c7acdf58981ae1216ed7e7e92d18ab3b4",
+      "tx_hash": "0xa91982c16f2bf8153ce2ba401e03c347f1e10a80411cd6387087348c063eb9da",
       "status": "ACCEPTED",
       "execution": "ERROR",
       "state_after": "PENDING_AUDIT",
       "note": "state unchanged",
-      "observed_at": 1792445843
+      "observed_at": 1792446556
     }
   ]
 }

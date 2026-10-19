@@ -126,10 +126,11 @@ clamped. `test_window_bounds`, `test_max_claim_bounds`, `test_min_stake_bounds`,
 |---|---|---|
 | 1 | The stake invariant compared a value with itself, so it could never fail | FIXED, added a `locked_stake_total` storage counter. `test_mixed_scenario_keeps_the_invariant_after_every_step` |
 | 2 | The project name was placed in the audit prompt as trusted metadata, a free injection channel for a claim owner | FIXED, name and url are inside the untrusted claim block, `<>{}` and control characters rejected. `test_operator_text_is_framed_as_untrusted_data`, `test_project_name_validation` |
-| 3 | A nondeterministic audit transaction can report an intermediate `execution_result` in its receipt while the finalized state records the agreed outcome | OPEN, documented. The live scenario asserts on `LATEST_FINAL` state. No contract change can fix a receipt reporting detail |
+| 3 | A nondeterministic audit transaction can report an intermediate `execution_result` in its receipt while the accepted state records the agreed outcome | OPEN, documented. The live scenario asserts on the latest accepted contract state and the evidence collector re-reads the same claims at final state. No contract change can fix a receipt reporting detail |
 | 4 | If the community pool address cannot accept native value, the queued slash transfer fails and the slashed value stays in the contract with no recovery method | OPEN, operational assumption. Deploy with an externally owned account or a receiver contract as the pool. The live run uses an EOA |
 | 5 | `accounting_invariant()` is O(number of claims) | OPEN, intended for off chain audit views, never called by a write path |
 | 6 | Prompt injection resistance is argued, not proven | OPEN, stated as a limitation in the README |
 | 7 | `transfer_credits` to the caller's own address is a no-op that still writes | OPEN, harmless, no value created or destroyed |
+| 8 | A tier-only LLM answer (no `metric_score`) was mapped to the middle of its band, which minted 50 percent of the claim on a malformed answer | FIXED, `_parse_verdict` now rejects a missing score and there is no default. `test_tier_only_answer_fails_closed`, `test_malformed_verdicts_fail_closed` |
 
 The contract is not described as bug free. Items 3 to 7 are open with reasons.

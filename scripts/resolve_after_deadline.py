@@ -36,6 +36,18 @@ def setup_config(network: str = "studionet") -> None:
     config.plugin_config = plugin
 
 
+def _retry(fn, attempts: int = 5, pause: int = 8):
+    last = None
+    for attempt in range(attempts):
+        try:
+            return fn()
+        except Exception as error:  # transport flake only, re-raised at the end
+            last = error
+            print(f"RETRY {attempt + 1}/{attempts}: {error}", flush=True)
+            time.sleep(pause)
+    raise last
+
+
 def main() -> None:
     setup_config()
     from gltest import get_contract_factory
@@ -50,7 +62,26 @@ def main() -> None:
 
     factory = get_contract_factory("CarbonCreditVerisign")
     contract = factory.build_contract(contract_address=address, account=keeper)
-    claim = contract.get_claim(args=[CLAIM]).call()
+    claim = _retry(lambda: contract.get_claim(args=[CLAIM]).call())
+    if claim["status"] not in (
+        "PENDING_AUDIT",
+        "PROVISIONAL_HOLD",
+        "EVIDENCE_SUBMITTED",
+        "CONTESTED",
+    ):
+        record = {
+            "claim": CLAIM,
+            "address": address,
+            "already_closed": True,
+            "status": claim["status"],
+            "claim_after": claim,
+            "invariant": _retry(lambda: contract.accounting_invariant().call()),
+            "resolved_at": int(time.time()),
+        }
+        OUT.parent.mkdir(parents=True, exist_ok=True)
+        OUT.write_text(json.dumps(record, indent=2), encoding="utf-8")
+        print(json.dumps(record), flush=True)
+        return
     deadline = int(claim["deadline"])
     now = int(time.time())
     wait = deadline - now + 30
@@ -69,8 +100,10 @@ def main() -> None:
     if wait > 0:
         time.sleep(wait)
 
-    tx = contract.connect(keeper).resolve_expired_claim(args=[CLAIM]).transact(
-        wait_transaction_status=TransactionStatus.ACCEPTED
+    tx = _retry(
+        lambda: contract.connect(keeper).resolve_expired_claim(args=[CLAIM]).transact(
+            wait_transaction_status=TransactionStatus.ACCEPTED
+        )
     )
     execution = (
         ((tx.get("consensus_data") or {}).get("leader_receipt") or [{}])[0]
@@ -83,8 +116,8 @@ def main() -> None:
         "execution": execution,
         "succeeded": tx_execution_succeeded(tx),
         "resolved_at": int(time.time()),
-        "claim_after": contract.get_claim(args=[CLAIM]).call(),
-        "invariant": contract.accounting_invariant().call(),
+        "claim_after": _retry(lambda: contract.get_claim(args=[CLAIM]).call()),
+        "invariant": _retry(lambda: contract.accounting_invariant().call()),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(record, indent=2), encoding="utf-8")

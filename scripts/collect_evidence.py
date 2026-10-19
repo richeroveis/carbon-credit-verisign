@@ -19,6 +19,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 import time
@@ -73,8 +74,16 @@ def onchain_code_rpc(address: str) -> str:
 
 
 def onchain_code_cli(address: str) -> str:
+    executable = shutil.which("genlayer")
+    if executable is None:
+        raise RuntimeError("genlayer CLI is not on PATH")
+    if executable.lower().endswith(".ps1"):
+        command = ["pwsh", "-NoProfile", "-File", executable, "code", address]
+    else:
+        # shutil.which resolves genlayer.CMD on Windows, which subprocess runs.
+        command = [executable, "code", address]
     result = subprocess.run(
-        ["genlayer", "code", address],
+        command,
         capture_output=True,
         text=True,
         check=True,
@@ -132,6 +141,15 @@ def execution(tx: dict) -> str:
     return str(leader.get("execution_result", "UNKNOWN"))
 
 
+def expected_for(step: str) -> str:
+    """State the result each step is supposed to produce."""
+    if step.startswith("attack_"):
+        return "ERROR, state unchanged"
+    if step.startswith("audit_"):
+        return "ACCEPTED, or UNDETERMINED then retried"
+    return "SUCCESS"
+
+
 def main() -> None:
     if not RUN_PATH.exists():
         raise SystemExit(f"missing {RUN_PATH}, run the live scenario first")
@@ -163,16 +181,17 @@ def main() -> None:
     late = {}
     if LATE_PATH.exists():
         late = json.loads(LATE_PATH.read_text(encoding="utf-8"))
-        transactions.append(
-            {
-                "step": "resolve_after_deadline_C",
-                "tx_hash": late.get("tx_hash"),
-                "status": late.get("status"),
-                "execution": late.get("execution"),
-                "expected": "SUCCESS",
-                "note": "late side of the deadline boundary",
-            }
-        )
+        if late.get("tx_hash"):
+            transactions.append(
+                {
+                    "step": "resolve_after_deadline_C",
+                    "tx_hash": late.get("tx_hash"),
+                    "status": late.get("status"),
+                    "execution": late.get("execution"),
+                    "expected": "SUCCESS",
+                    "note": "late side of the deadline boundary",
+                }
+            )
 
     details = fetch_transactions([item.get("tx_hash") for item in transactions])
 
@@ -229,14 +248,20 @@ def main() -> None:
         votes = vote_summary(tx) if tx else "not fetched"
         lines.append(
             f"| {item.get('step')} | `{item.get('tx_hash')}` | {status} | "
-            f"{result} | {votes} | {item.get('expected', 'SUCCESS')} |"
+            f"{result} | {votes} | {item.get('expected', expected_for(str(item.get('step'))))} |"
         )
+    lines.append("")
+    lines.append("An UNDETERMINED row is a validator round that did not reach the")
+    lines.append("required agreement. It applies no state change and the scenario retries")
+    lines.append("it; the following row for the same step is the accepted attempt. An")
+    lines.append("ERROR execution on an `attack_` row is the intended revert, and the")
+    lines.append("state after it is checked to be unchanged.")
     lines.append("")
     lines.append("Terminal statuses were checked at collection time. ACCEPTED means")
     lines.append("the transaction was accepted by consensus with the execution result")
     lines.append("shown; FINALIZED is reported where the chain already moved it.")
     lines.append("")
-    lines.append("## Final state read from the contract")
+    lines.append("## State at the end of the main scenario")
     lines.append("")
     lines.append("```json")
     lines.append(json.dumps(run.get("snapshot"), indent=2))
@@ -266,7 +291,8 @@ def main() -> None:
         lines.append("")
         lines.append("This is the late side of the boundary: the same claim was")
         lines.append("rejected before the deadline in the scenario above and resolved")
-        lines.append("after it here.")
+        lines.append("after it here. The claim snapshot and the invariant in this record")
+        lines.append("are the state after the late resolution.")
         lines.append("")
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
