@@ -147,3 +147,21 @@ clamped. `test_window_bounds`, `test_max_claim_bounds`, `test_min_stake_bounds`,
 | 11 | Native value sent directly to the contract outside a method is not tracked and has no recovery path | OPEN, by design. The contract has no admin sweep; only method attached value is accounted for |
 
 The contract is not described as bug free. Items 3 to 7 and 9 to 11 are open with reasons.
+
+## Final verification
+
+Run after the fail-closed fix, on the deployed contract
+`0xD227f75F797e34789f5DCdbaa6407Be35841dFAF` at commit `db5e5b0`.
+
+| Check | Command | Result |
+|---|---|---|
+| Lint and SDK validation | `genvm-lint check contracts/carbon_credit_verisign.py --json` | `ok: true`, 16 methods (8 view, 8 write), one I200 notice that a newer runner exists. The required runner pin is kept |
+| Direct suite | `python -m pytest tests/direct -q` | 128 passed |
+| Live scenario | `gltest tests/integration -v -s --network studionet` | 1 passed in 406.31s. Claim A issued 7.5 credits, claim B was revoked and slashed 10 GEN, claim C stayed open for the late resolution |
+| Early deadline attack | `attack_early_resolve_C` in the live scenario | ACCEPTED with execution ERROR and state unchanged |
+| Late deadline resolution | `python scripts/resolve_after_deadline.py` | `0x279ab1e712797369d670b064d5a49e074f946d3b61266a06604f4ab8aa3a466e`, ACCEPTED, SUCCESS, claim C `EXPIRED_UNVERIFIED` |
+| Four way sha256 | `python scripts/collect_evidence.py` | All four digests `715e068aa67fac249827f8606d66365e81f055ab1894e5ef68f9da8229367792` |
+| Old addresses at HEAD | `git grep -n -E "0x4245EEE|0x385C7F|0x91A795" HEAD -- .` | No matches |
+| Secrets | `git ls-files`, `git log --all --name-only` | `.env` is not tracked and never appears in history; only placeholder variable names appear in `gltest.config.yaml` |
+| Worktree | `git status --short` | Clean |
+| Remote | `git remote -v` | No remote configured, so a push comparison is not applicable |
